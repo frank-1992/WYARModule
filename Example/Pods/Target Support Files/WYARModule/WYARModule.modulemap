@@ -1,0 +1,6 @@
+framework module WYARModule {
+  umbrella header "WYARModule-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,0 +1,22 @@
+{
+  "name": "WYARModule",
+  "version": "0.1.0",
+  "summary": "A short description of WYARModule.",
+  "description": "TODO: Add long description of the pod here.",
+  "homepage": "https://github.com/frank-1992/WYARModule",
+  "license": {
+    "type": "MIT",
+    "file": "LICENSE"
+  },
+  "authors": {
+    "frank-1992": "wuyi3@xiaohongshu.com"
+  },
+  "source": {
+    "git": "https://github.com/frank-1992/WYARModule.git",
+    "tag": "0.1.0"
+  },
+  "platforms": {
+    "ios": "9.0"
+  },
+  "source_files": "WYARModule/Classes/**/*"
+}

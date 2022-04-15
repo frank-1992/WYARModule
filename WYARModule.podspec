@@ -28,7 +28,7 @@ TODO: Add long description of the pod here.
   s.source           = { :git => 'https://github.com/frank-1992/WYARModule.git', :tag => s.version.to_s }
   # s.social_media_url = 'https://twitter.com/<TWITTER_USERNAME>'
 
-  s.ios.deployment_target = '9.0'
+  s.ios.deployment_target = '10.0'
 
   s.source_files = 'WYARModule/Classes/**/*'
   
@@ -36,7 +36,14 @@ TODO: Add long description of the pod here.
   #   'WYARModule' => ['WYARModule/Assets/*.png']
   # }
 
-  # s.public_header_files = 'Pod/Classes/**/*.h'
-  # s.frameworks = 'UIKit', 'MapKit'
-  # s.dependency 'AFNetworking', '~> 2.3'
+  s.dependency 'lottie-ios'
+  s.dependency 'SnapKit'
+  s.dependency 'XYUITheme'
+  s.dependency 'XYAPIRoute'
+  s.dependency 'XYFileManager'
+  s.dependency 'XYRouter'
+  s.dependency 'XYAnalytics'
+  s.dependency 'RedI18N'
+  s.dependency 'XYAlertCenter'
+  s.dependency 'XYPermission/Photos'
 end
