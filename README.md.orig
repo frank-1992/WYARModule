@@ -1,8 +1,5 @@
 <<<<<<< HEAD
 # WYARModule
-=======
-# WYARModule
-
 [![CI Status](https://img.shields.io/travis/frank-1992/WYARModule.svg?style=flat)](https://travis-ci.org/frank-1992/WYARModule)
 [![Version](https://img.shields.io/cocoapods/v/WYARModule.svg?style=flat)](https://cocoapods.org/pods/WYARModule)
 [![License](https://img.shields.io/cocoapods/l/WYARModule.svg?style=flat)](https://cocoapods.org/pods/WYARModule)
@@ -30,4 +27,6 @@ frank-1992, wuyi3@xiaohongshu.com
 ## License
 
 WYARModule is available under the MIT license. See the LICENSE file for more info.
->>>>>>> be6eff9 (Initial commit)
+=======
+# WYARModule
+>>>>>>> 763bc2c4f73243993d6032db9e034d340a5c181e
