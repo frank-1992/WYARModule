@@ -46,5 +46,5 @@ TODO: Add long description of the pod here.
   s.dependency 'RedI18N'
   s.dependency 'XYAlertCenter'
   s.dependency 'XYPermission/Photos'
-  s.dependency 'SCNRecorder', '~> 2.7'
+  s.dependency 'SCNRecorder', :git => 'https://github.com/gorastudio-ceo/SCNRecorder.git', '~> 2.7'
 end
