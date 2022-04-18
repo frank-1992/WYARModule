@@ -7,6 +7,7 @@
 
 import XYRouter
 import UIKit
+import XYUIKit
 
 public class ARPreviewRouteContext: RouteContext {
     let bizType: String
@@ -39,9 +40,13 @@ public class ARPreviewRouter: XYRouter<UIViewController, RouteContext> {
         guard let vc = UIViewController.xy_topViewController else {
             return
         }
-        let arSceneVC = ARSceneController()
-        arSceneVC.parameter = (context.bizType, context.bizId)
-        arSceneVC.present(with: vc)
+        if #available(iOS 13.0, *) {
+            let arSceneVC = ARSceneController()
+            arSceneVC.parameter = (context.bizType, context.bizId)
+            arSceneVC.present(with: vc)
+        } else {
+            // Fallback on earlier versions
+        }
     }
 
     func showLowVersionAlert() {
