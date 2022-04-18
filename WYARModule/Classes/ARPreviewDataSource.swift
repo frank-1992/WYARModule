@@ -6,6 +6,7 @@
 //
 
 import XYAPIRoute
+import XYFileManager
 
 class ARPreviewDataSource {
 

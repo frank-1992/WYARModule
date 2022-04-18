@@ -12,9 +12,10 @@ import SCNRecorder
 import Photos
 import AVKit
 
+@available(iOS 13.0, *)
 public extension ARSceneController {
     func setupARRecord() {
-        sceneView.prepareForRecording()
+        self.sceneView.prepareForRecording()
     }
     
     @objc
@@ -38,7 +39,7 @@ public extension ARSceneController {
             sender.setTitle("Stop", for: .normal)
             sender.tag = 200
         } else {
-            sceneView.finishVideoRecording { (videoRecording) in
+            sceneView.finishVideoRecording { videoRecording in
                 
                 DispatchQueue.global().async {
                     let filePath = videoRecording.url.path
@@ -63,9 +64,9 @@ public extension ARSceneController {
     
     @objc
     func didFinishSavingVideo(videoPath: String, error: NSError?, contextInfo: UnsafeMutableRawPointer?) {
-        if error != nil{
+        if error != nil {
             print("保存失败")
-        }else{
+        } else {
             print(videoPath)
             print("保存成功，请到相册中查看")
             self.timeLabel.text = "00:00"

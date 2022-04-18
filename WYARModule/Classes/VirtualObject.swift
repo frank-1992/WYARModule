@@ -9,6 +9,7 @@ import UIKit
 import SceneKit
 import ARKit
 
+@available(iOS 13.0, *)
 public final class VirtualObject: SCNReferenceNode {
 
     /// object name
@@ -24,10 +25,16 @@ public final class VirtualObject: SCNReferenceNode {
     /// object's rotation
     public var objectRotation: Float {
         get {
-            return childNodes.first!.eulerAngles.y
+            if let childNode = childNodes.first {
+                return childNode.eulerAngles.y
+            } else {
+                return 0
+            }
         }
         set (newValue) {
-            childNodes.first!.eulerAngles.y = newValue
+            if let childNode = childNodes.first {
+                childNode.eulerAngles.y = newValue
+            }
         }
     }
     
@@ -52,11 +59,11 @@ public final class VirtualObject: SCNReferenceNode {
         raycast = nil
     }
     
-    public init(resourceName: String) {
+    public init?(resourceName: String) {
         guard let modelURL = Bundle.main.url(forResource: resourceName, withExtension: "usdz", subdirectory: "Models.scnassets") else {
             fatalError("can't find virtual object")
         }
-        super.init(url: modelURL)!
+        super.init(url: modelURL)
         self.load()
         self.name = resourceName
         setupPivot()
@@ -74,7 +81,7 @@ public final class VirtualObject: SCNReferenceNode {
         fatalError("init(coder:) has not been implemented")
     }
     // MARK: - setup pivot
-    private func setupPivot(){
+    private func setupPivot() {
         self.pivot = SCNMatrix4MakeTranslation(
             0,
             self.boundingBox.min.y,
@@ -90,24 +97,25 @@ public final class VirtualObject: SCNReferenceNode {
         let value4: CGFloat = CGFloat(self.boundingBox.max.x - self.boundingBox.min.z)
         
         let min = minOne([value1, value2, value3, value4])
-        let edge = sqrt(min*min*2)
+        let edge = sqrt(min * min * 2)
         let plane = SCNPlane(width: edge, height: edge)
         plane.firstMaterial?.diffuse.contents = UIColor.red
         plane.firstMaterial?.lightingModel = .shadowOnly
         
         let planeNode = SCNNode(geometry: plane)
-        let x = self.boundingBox.min.x + (self.boundingBox.max.x - self.boundingBox.min.x)/2
+        let x = self.boundingBox.min.x + (self.boundingBox.max.x - self.boundingBox.min.x) / 2
         let y = self.boundingBox.min.y
-        let z = self.boundingBox.min.z + (self.boundingBox.max.z - self.boundingBox.min.z)/2
+        let z = self.boundingBox.min.z + (self.boundingBox.max.z - self.boundingBox.min.z) / 2
         planeNode.position = SCNVector3(x: x,
                                         y: y,
                                         z: z)
-        planeNode.eulerAngles.x = -.pi/2
+        planeNode.eulerAngles.x = -.pi / 2
         self.addChildNode(planeNode)
     }
 }
 
 // MARK: - VirtualObject extensions
+@available(iOS 13.0, *)
 public extension VirtualObject {
     /// return existing virtual node
     static func existingObjectContainingNode(_ node: SCNNode) -> VirtualObject? {
@@ -120,9 +128,9 @@ public extension VirtualObject {
         return existingObjectContainingNode(parent)
     }
     
-    func minOne<T:Comparable>( _ seq:[T]) -> T{
-        assert(seq.count>0)
-        return seq.reduce(seq[0]){
+    func minOne<T: Comparable>( _ seq:[T]) -> T {
+        assert(!seq.isEmpty)
+        return seq.reduce(seq[0]) {
             min($0, $1)
         }
     }

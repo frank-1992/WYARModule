@@ -8,6 +8,7 @@
 import UIKit
 import ARKit
 
+@available(iOS 13.0, *)
 extension ARSceneController: ARCoachingOverlayViewDelegate {
     
     // HideUI
@@ -37,7 +38,8 @@ extension ARSceneController: ARCoachingOverlayViewDelegate {
             coachingOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             coachingOverlay.widthAnchor.constraint(equalTo: view.widthAnchor),
             coachingOverlay.heightAnchor.constraint(equalTo: view.heightAnchor)
-            ])
+        ]
+        )
         
         coachingOverlay.activatesAutomatically = true
         coachingOverlay.goal = .horizontalPlane

@@ -8,6 +8,7 @@
 import UIKit
 import ARKit
 
+@available(iOS 13.0, *)
 public class ARView: ARSCNView {
 
     // MARK: Position Testing
@@ -33,6 +34,7 @@ public class ARView: ARSCNView {
 }
 
 // MARK: - ARSCNView extensions
+@available(iOS 13.0, *)
 extension ARSCNView {
     
     func smartHitTest(_ point: CGPoint) -> ARHitTestResult? {
@@ -58,6 +60,7 @@ extension ARSCNView {
 }
 
 // MARK: - ARSCNView extensions
+@available(iOS 13.0, *)
 extension ARSCNView {
 
     func unprojectPoint(_ point: SIMD3<Float>) -> SIMD3<Float> {
