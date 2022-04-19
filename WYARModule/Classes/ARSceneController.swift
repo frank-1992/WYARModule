@@ -11,6 +11,8 @@ import ARKit
 import SCNRecorder
 import AVKit
 import XYAlertCenter
+import Photos
+import XYPermission
 
 public enum FixValue {
     // set loaded object's scale
@@ -34,6 +36,8 @@ public final class ARSceneController: UIViewController {
     }()
     
     public var parameter: ARModuleServiceParameter?
+    
+    public var model: AR3DModel?
 
     public lazy var sceneView: ARView = {
         let sceneView = ARView(frame: view.bounds)
@@ -93,12 +97,62 @@ public final class ARSceneController: UIViewController {
         return light
     }()
     
+    // about assets (photo, video)
+    var featchResult = PHFetchResult<PHAsset>()
+
+    private lazy var imageManager: PHCachingImageManager = {
+        let imageManager = PHCachingImageManager()
+        return imageManager
+    }()
+    
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupSceneView()
         setupCoachingOverlay()
         DispatchQueue.global().async {
             self.downloadUsdzFile()
+        }
+        addApplicationObservers()
+        observePhoto()
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    }
+    
+    private func addApplicationObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForegroundNotification), name: UIApplication.willEnterForegroundNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackgroundNotification), name: UIApplication.didEnterBackgroundNotification, object: nil)
+    }
+    
+    @objc
+    func willEnterForegroundNotification() {
+        observePhoto()
+    }
+
+    @objc
+    func didEnterBackgroundNotification() {
+        PHPhotoLibrary.shared().unregisterChangeObserver(self)
+    }
+    
+    private func observePhoto() {
+        // 申请权限
+        Permission.photos.request { status in
+            if status != .authorized {
+                return
+            }
+
+            // 启动后先获取目前所有照片资源
+            let allPhotosOptions = PHFetchOptions()
+            allPhotosOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+            allPhotosOptions.predicate = NSPredicate(format: "mediaType == %d || mediaType == %d",
+                                                     PHAssetMediaType.image.rawValue,
+                                                     PHAssetMediaType.video.rawValue)
+            self.featchResult = PHAsset.fetchAssets(with: allPhotosOptions)
+
+            // 监听资源改变
+            PHPhotoLibrary.shared().register(self)
         }
     }
     
@@ -116,6 +170,7 @@ public final class ARSceneController: UIViewController {
             switch result {
             case .success(let (url, model)):
                 print(url)
+                self?.model = model
                 self?.loadVirtualObject(with: url)
             case .failure(let error):
                 XYAlert.createTextItemWithText(onMiddle: "下载失败，请稍后重试")?.show()
@@ -132,6 +187,14 @@ public final class ARSceneController: UIViewController {
     public override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         sceneView.session.pause()
+    }
+    
+    func showResultVC(with mediaType: ARResultMediaType) {
+        let resultVC = ARResultController(mediaType: mediaType)
+        resultVC.model = model
+
+        resultVC.modalPresentationStyle = .custom
+        present(resultVC, animated: false, completion: nil)
     }
     
     func resetTracking() {
@@ -451,6 +514,57 @@ extension ARSceneController: ARSessionDelegate {
     }
     
 }
+
+@available(iOS 13.0, *)
+extension ARSceneController: PHPhotoLibraryChangeObserver {
+    public func photoLibraryDidChange(_ changeInstance: PHChange) {
+
+        guard let imageChanges = changeInstance.changeDetails(for: featchResult) else {
+            return
+        }
+
+        DispatchQueue.main.async {
+            // 获取最新的完整数据
+            self.featchResult = imageChanges.fetchResultAfterChanges
+
+            if !imageChanges.hasIncrementalChanges || imageChanges.hasMoves {
+                return
+            }
+
+            // 照片新增情况
+            guard let insertedIndexes = imageChanges.insertedIndexes,
+                  let indexSet = insertedIndexes.first else {
+                      return
+                  }
+            // 获取最后添加的图片资源
+            let asset = self.featchResult[indexSet]
+            self.showDetailViewControllerIfNeeded(asset)
+        }
+    }
+
+    func showDetailViewControllerIfNeeded(_ asset: PHAsset) {
+        if asset.mediaType == .image {
+            let requestImageOption = PHImageRequestOptions()
+            requestImageOption.deliveryMode = .highQualityFormat
+            imageManager.requestImage(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: .default, options: requestImageOption) { (image: UIImage?, _) in
+                self.showResultVC(with: .image(image))
+            }
+        } else if asset.mediaType == .video {
+            let videoRequestOptions = PHVideoRequestOptions()
+            videoRequestOptions.deliveryMode = .highQualityFormat
+            videoRequestOptions.version = .original
+            videoRequestOptions.isNetworkAccessAllowed = true
+            imageManager.requestPlayerItem(forVideo: asset, options: videoRequestOptions, resultHandler: {
+                result, _ in
+                self.showResultVC(with: .video(result))
+            })
+
+        } else if asset.mediaType == .audio {
+            // do anything for audio asset
+        }
+    }
+}
+
 
 // MARK: - UIGestureRecognizerDelegate
 @available(iOS 13.0, *)
