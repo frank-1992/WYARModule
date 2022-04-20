@@ -35,39 +35,63 @@ public extension ARSceneController {
         } else {
             sceneView.finishVideoRecording { [weak self] videoRecording in
                 let filePath = videoRecording.url.path
-                self?.saveToAlbum(filePath: filePath)
+                self?.saveVideosToAlbum(videoPath: filePath)
             }
             sender.setTitle("Start", for: .normal)
             sender.tag = 100
         }
     }
     
-    // MARK: - save videos to album successfully
+    // MARK: - start take photo
     @objc
-    func didFinishSavingVideo(videoPath: String, error: NSError?, contextInfo: UnsafeMutableRawPointer?) {
+    func takePhotoAction(_ sender: UIButton) {
+        sceneView.takePhotoResult { [weak self] (result: Result<UIImage, Swift.Error>) in
+            switch result {
+            case .success(let image):
+                self?.saveImagesToAlbum(image: image)
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+    
+    // MARK: - save video to album successfully
+    @objc
+    func didFinishSavingVideo(videoPath: String, error: NSError?, contextInfo: UnsafeMutableRawPointer) {
         if error != nil {
-            print("保存失败")
+            print("视频保存失败")
         } else {
+            print("视频保存成功")
             self.timeLabel.text = "00:00"
         }
     }
     
-    // MARK: - start take photo
-    private func startTakePhoto() {
-        sceneView.takePhotoResult { [weak self] (result: Result<UIImage, Swift.Error>) in
-            
+    // MARK: - save image to album successfully
+    @objc
+    private func didFinishSavingImage(image: UIImage, error: NSError?, contextInfo: UnsafeMutableRawPointer) {
+        if error != nil {
+            print("照片保存失败")
+        } else {
+            print("照片保存成功")
         }
     }
     
-    // MARK: - save to album
-    private func saveToAlbum(filePath: String) {
+    // MARK: - save videos to album
+    private func saveVideosToAlbum(videoPath: String) {
         DispatchQueue.global().async {
-            let videoCompatible = UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(filePath)
+            let videoCompatible = UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(videoPath)
             if videoCompatible {
-                UISaveVideoAtPathToSavedPhotosAlbum(filePath, self, #selector(self.didFinishSavingVideo(videoPath:error:contextInfo:)), nil)
+                UISaveVideoAtPathToSavedPhotosAlbum(videoPath, self, #selector(self.didFinishSavingVideo(videoPath:error:contextInfo:)), nil)
             } else {
                 print("该文件无法保存至相册")
             }
+        }
+    }
+    
+    // MARK: - save photos to album
+    private func saveImagesToAlbum(image: UIImage) {
+        DispatchQueue.global().async {
+            UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.didFinishSavingImage(image:error:contextInfo:)), nil)
         }
     }
 }

@@ -13,6 +13,7 @@ import AVKit
 import XYAlertCenter
 import Photos
 import XYPermission
+import XYAnalytics
 
 public enum FixValue {
     // set loaded object's scale
@@ -76,6 +77,7 @@ public final class ARSceneController: UIViewController {
         button.layer.cornerRadius = 40
         button.tag = 100
         button.addTarget(self, action: #selector(recordingAction(_:)), for: .touchUpInside)
+//        button.addTarget(self, action: #selector(takePhotoAction(_:)), for: .touchUpInside)
         return button
     }()
     
@@ -114,6 +116,7 @@ public final class ARSceneController: UIViewController {
         }
         addApplicationObservers()
         observePhoto()
+        excuteImpression()
     }
     
     deinit {
@@ -179,6 +182,14 @@ public final class ARSceneController: UIViewController {
         }
     }
     
+    private func excuteImpression() {
+        XYAnalyticsOrganizer._
+            .index.contentId(model?.bizId ?? "")
+            .page.pageInstance(.rnftCameraShootPage)
+            .event.action(.pageview).pointId(11048)
+            .send()
+    }
+    
     public override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         resetTracking()
@@ -192,7 +203,6 @@ public final class ARSceneController: UIViewController {
     func showResultVC(with mediaType: ARResultMediaType) {
         let resultVC = ARResultController(mediaType: mediaType)
         resultVC.model = model
-
         resultVC.modalPresentationStyle = .custom
         present(resultVC, animated: false, completion: nil)
     }
