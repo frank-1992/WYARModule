@@ -80,5 +80,15 @@ extension ARSCNView {
     var screenCenter: CGPoint {
         return CGPoint(x: bounds.midX, y: bounds.midY)
     }
+    
+    private func anyPlaneFrom(location: CGPoint) -> (SCNNode, SCNVector3)? {
+        let results = hitTest(location, types: ARHitTestResult.ResultType.existingPlaneUsingExtent)
+        
+        guard !results.isEmpty,
+              let anchor = results[0].anchor,
+              let node = node(for: anchor) else { return nil }
+        
+        return (node, SCNVector3.positionFromTransform(results[0].worldTransform))
+    }
 }
 
