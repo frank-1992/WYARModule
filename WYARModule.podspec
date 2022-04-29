@@ -8,7 +8,7 @@
 
 Pod::Spec.new do |s|
   s.name             = 'WYARModule'
-  s.version          = '1.5.1'
+  s.version          = '1.5.2'
   s.summary          = 'A short description of WYARModule.'
 
 # This description is used to generate tags and improve search results.
