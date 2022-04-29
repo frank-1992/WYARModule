@@ -50,6 +50,12 @@ final class ARResultController: UIViewController {
         backButton.addTarget(self, action: #selector(backButtonClicked), for: .touchUpInside)
         return backButton
     }()
+    
+    private lazy var saveButton: UIButton = {
+        let button = UIButton()
+        button.setImage(UIImage(named: "save", in: ARUtil.bundle, compatibleWith: nil), for: .normal)
+        return button
+    }()
 
     private lazy var publishButton: UIButton = {
         let publishButton = UIButton()
@@ -134,10 +140,19 @@ final class ARResultController: UIViewController {
             bottomPadding = 0
         }
 
+        view.addSubview(saveButton)
+        saveButton.snp.makeConstraints { make in
+            make.left.equalTo(view).offset(20)
+            make.bottom.equalTo(-34 - bottomPadding)
+            make.size.equalTo(CGSize(width: 48, height: 48))
+        }
+        saveButton.setImage(UIImage(named: "save", in: ARUtil.bundle, compatibleWith: nil), for: .normal)
+
+        
         view.addSubview(publishButton)
         publishButton.snp.makeConstraints { make in
-            make.leading.equalTo(31)
-            make.centerX.equalToSuperview()
+            make.left.equalTo(saveButton.snp.right).offset(20)
+            make.right.equalTo(view).offset(-20)
             make.height.equalTo(48)
             make.bottom.equalTo(-34 - bottomPadding)
         }

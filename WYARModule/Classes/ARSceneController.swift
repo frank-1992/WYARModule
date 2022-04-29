@@ -14,9 +14,25 @@ import XYAlertCenter
 import Photos
 import XYAnalytics
 
+public enum CameraMode: CaseIterable {
+    case picture
+    case video
+    
+    var title: String {
+        switch self {
+        case .picture:
+            return "拍照"
+        case .video:
+            return "拍视频"
+        }
+    }
+}
+
+public enum Capture {
+    static let limitedTime: Double = 60.00
+}
+
 public enum FixValue {
-    // set loaded object's scale
-    static let originObjectScale: Float = 0.01
     // solve the problem of plane flickering, the tilt angle is required
     static let lightNodeAngleFix: Float = 0.01
     // single pan gesture rotation sensitivity
@@ -67,60 +83,44 @@ public final class ARSceneController: UIViewController {
     /// the latest screen touch position when a pan gesture is active
     private var lastPanTouchPosition: CGPoint?
     
-    private lazy var startRecordButton: UIButton = {
+    // camera buttons UI
+    private var currentCameraMode: CameraMode = .video
+
+    lazy var videoButton: UIButton = {
         let button = UIButton()
-        button.setTitle("Start", for: .normal)
-        button.setTitleColor(.white, for: .normal)
-        button.backgroundColor = UIColor.systemBlue
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 16)
-        button.layer.cornerRadius = 40
-        button.tag = 100
-        button.addTarget(self, action: #selector(recordingAction(_:)), for: .touchUpInside)
-//        button.addTarget(self, action: #selector(takePhotoAction(_:)), for: .touchUpInside)
+        button.setTitle(CameraMode.video.title, for: .normal)
+        button.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
+        button.setTitleColor(UIColor.white, for: .selected)
+        button.titleLabel?.font = UIFont(name: "PingFang SC", size: 16)
+        button.isSelected = true
+        button.addTarget(self, action: #selector(switchVideoMode), for: .touchUpInside)
         return button
     }()
     
-    public lazy var timeLabel: UILabel = {
-        let label = UILabel()
-        label.backgroundColor = .black.withAlphaComponent(0.5)
-        label.layer.cornerRadius = 6
-        label.layer.masksToBounds = true
-        label.textColor = UIColor.white
-        label.font = UIFont.systemFont(ofSize: 16)
-        label.textAlignment = .center
-        label.text = "00:00"
-        return label
+    lazy var pictureButton: UIButton = {
+        let button = UIButton()
+        button.setTitle(CameraMode.picture.title, for: .normal)
+        button.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
+        button.setTitleColor(UIColor.white, for: .selected)
+        button.titleLabel?.font = UIFont(name: "PingFang SC", size: 16)
+        button.isSelected = false
+        button.addTarget(self, action: #selector(switchPictureMode), for: .touchUpInside)
+        return button
     }()
     
-    private lazy var light: SCNLight = {
-        let light = SCNLight()
-        light.type = .directional
-        return light
-    }()
-    
-    // about assets (photo, video)
-    public var featchResult = PHFetchResult<PHAsset>()
-
-    public lazy var imageManager: PHCachingImageManager = {
-        let imageManager = PHCachingImageManager()
-        return imageManager
+    lazy var cameraTabView: CameraButtonView = {
+        let view = CameraButtonView(frame: .zero)
+        view.delegate = self
+        return view
     }()
     
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupSceneView()
-//        setupCoachingOverlay()
         DispatchQueue.global().async {
             self.downloadUsdzFile()
         }
-        addApplicationObservers()
-        observePhoto()
         excuteImpression()
-    }
-    
-    deinit {
-        NotificationCenter.default.removeObserver(self)
-        PHPhotoLibrary.shared().unregisterChangeObserver(self)
     }
     
     public func present(with vc: UIViewController) {
@@ -192,14 +192,6 @@ public final class ARSceneController: UIViewController {
         session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
     }
     
-    // MARK: - loadVirtualObject
-//    private func loadVirtualObject(with sourceName: String) {
-//        let virtualObject = VirtualObject(resourceName: sourceName)
-//        self.loadedVirtualObject = virtualObject
-//        print("模型加载成功")
-//        addGestures()
-//    }
-    
     private func loadVirtualObject(with url: URL) {
         let virtualObject = VirtualObject(url: url)
         loadedVirtualObject = virtualObject
@@ -213,38 +205,14 @@ public final class ARSceneController: UIViewController {
     private func setupSceneView() {
         view.backgroundColor = .white
         view.addSubview(sceneView)
-        
-        // light for scene
-        addLight()
-        
+
         // tap to place object
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showVirtualObject(_:)))
         sceneView.addGestureRecognizer(tapGesture)
         
-        // add record buttons
-        view.addSubview(startRecordButton)
-        startRecordButton.snp.makeConstraints { make in
-            make.centerX.equalTo(view)
-            make.bottom.equalTo(view).offset(-50)
-            make.size.equalTo(CGSize(width: 80, height: 80))
-        }
-        
         // about video record
         setupARRecord()
-
-        // show record time
-        showRecordTime()
-    }
-    
-    // MARK: - record time
-    func showRecordTime() {
-        view.addSubview(timeLabel)
-        timeLabel.snp.makeConstraints { make in
-            make.bottom.equalTo(startRecordButton.snp.top).offset(-6)
-            make.centerX.equalTo(startRecordButton)
-            make.width.equalTo(60)
-            make.height.equalTo(30)
-        }
+        setupCameraUI()
     }
     
     // MARK: - display virtual object
@@ -253,27 +221,8 @@ public final class ARSceneController: UIViewController {
             return
         }
         sceneView.scene.rootNode.addChildNode(virtualObject)
-        virtualObject.scale = SCNVector3(FixValue.originObjectScale, FixValue.originObjectScale, FixValue.originObjectScale)
         virtualObject.simdWorldPosition = simd_float3(x: 0, y: -1, z: -2)
         placedObject = virtualObject
-    }
-    
-    
-    // MARK: - add light to scene
-    private func addLight() {
-        let light = SCNLight()
-        light.type = .directional
-        light.shadowColor = UIColor.black.withAlphaComponent(0.2)
-        light.shadowRadius = 5
-        light.shadowSampleCount = 5
-        light.castsShadow = true
-        light.shadowMode = .forward
-
-        let shadowLightNode = SCNNode()
-        shadowLightNode.light = light
-        /// - Tag: 此处取值为2的话会出现plane闪烁的问题,需要灯光有一定的斜角
-        shadowLightNode.eulerAngles = SCNVector3(x: -.pi / (2 + FixValue.lightNodeAngleFix), y: 0, z: 0)
-        sceneView.scene.rootNode.addChildNode(shadowLightNode)
     }
     
     @objc
@@ -306,7 +255,6 @@ public final class ARSceneController: UIViewController {
             }
             
             sceneView.scene.rootNode.addChildNode(virtualObject)
-            virtualObject.scale = SCNVector3(FixValue.originObjectScale, FixValue.originObjectScale, FixValue.originObjectScale)
             virtualObject.simdWorldPosition = hitTestResult.worldTransform.translation
             placedObject = virtualObject
             
