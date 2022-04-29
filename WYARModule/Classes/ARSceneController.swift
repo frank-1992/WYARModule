@@ -13,6 +13,7 @@ import AVKit
 import XYAlertCenter
 import Photos
 import XYAnalytics
+import XYUITheme
 
 public enum CameraMode: CaseIterable {
     case picture
@@ -113,6 +114,19 @@ public final class ARSceneController: UIViewController {
         view.delegate = self
         return view
     }()
+    private lazy var backButton: UIButton = {
+        let backButton = UIButton()
+        backButton.setImage(Theme.icon.back_center_b.size(24).color(Theme.color.whitePatch1).image, for: .normal)
+        backButton.layer.zPosition = 1000
+        backButton.translatesAutoresizingMaskIntoConstraints = false
+        backButton.addTarget(self, action: #selector(backButtonClicked), for: .touchUpInside)
+        return backButton
+    }()
+    
+    @objc
+    func backButtonClicked() {
+        dismiss(animated: false, completion: nil)
+    }
     
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -202,8 +216,16 @@ public final class ARSceneController: UIViewController {
     
     // MARK: - setup ARSceneView
     private func setupSceneView() {
+        let statusHeight = UIApplication.shared.keyWindow?.windowScene?.statusBarManager?.statusBarFrame.height ?? 0
+        
         view.backgroundColor = .white
         view.addSubview(sceneView)
+        
+        view.addSubview(backButton)
+        backButton.snp.makeConstraints { make in
+            make.leading.equalTo(10)
+            make.top.equalTo(view.snp.top).offset(statusHeight + 10)
+        }
 
         // tap to place object
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(showVirtualObject(_:)))

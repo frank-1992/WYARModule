@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import XYUITheme
 
 protocol CameraButtonViewDelegate: AnyObject {
     func startCaptureVideo()
@@ -15,15 +16,20 @@ protocol CameraButtonViewDelegate: AnyObject {
 
 class CameraButtonView: UIView {
     
+    private let shutterWidth: CGFloat = 80.0
+    private let activeNormalProgressWidth: CGFloat = 40.0
+    private let progressLineWidth: CGFloat = 4.0
+    private let fillWhiteWidth: CGFloat = 68.0
+    
     weak var delegate: CameraButtonViewDelegate?
     
     public lazy var timeLabel: UILabel = {
         let label = UILabel()
         label.backgroundColor = .clear
-        label.font = UIFont(name: "PingFang SC", size: 13)
+        label.font = UIFont(name: "PingFangSC-Regular", size: 13)
         label.textAlignment = .center
-        label.textColor = .white
-        label.layer.shadowColor = UIColor.black.withAlphaComponent(0.5).cgColor
+        label.textColor = Theme.color.white.light()
+        label.layer.shadowColor = Theme.color.black.withAlphaComponent(0.5).cgColor
         label.layer.shadowOffset = .zero
         label.layer.shadowRadius = 1
         label.layer.shadowOpacity = 1
@@ -49,27 +55,27 @@ class CameraButtonView: UIView {
     // capture button UI
     private lazy var progressLayer: CAShapeLayer = {
         let layer = CAShapeLayer()
-        layer.lineWidth = 4
+        layer.lineWidth = progressLineWidth
         layer.path = activeNormalProgressCirclePath().cgPath
         layer.fillColor = UIColor.clear.cgColor
-        layer.strokeColor = UIColor.white.cgColor
+        layer.strokeColor =  Theme.color.white.light().cgColor
         layer.isHidden = true
         return layer
     }()
     
     private lazy var progressBackLayer: CAShapeLayer = {
         let layer = CAShapeLayer()
-        layer.lineWidth = 4
+        layer.lineWidth = progressLineWidth
         layer.path = activeNormalProgressCirclePath().cgPath
         layer.fillColor = UIColor.clear.cgColor
-        layer.strokeColor = UIColor.white.cgColor
+        layer.strokeColor = Theme.color.white.light().cgColor
         return layer
     }()
     
     private lazy var videoBackgroundView: UIView = {
         let effect = UIBlurEffect(style: .light)
         let view = UIVisualEffectView(effect: effect)
-        view.backgroundColor = UIColor(white: 0, alpha: 0.2)
+        view.backgroundColor = Theme.color.white.light().withAlphaComponent(0.2)
         view.layer.cornerRadius = 33.0
         view.clipsToBounds = true
         return view
@@ -78,8 +84,8 @@ class CameraButtonView: UIView {
     private lazy var photoBackgroundView: UIView = {
         let effect = UIBlurEffect(style: .light)
         let view = UIVisualEffectView(effect: effect)
-        view.backgroundColor = UIColor(white: 1, alpha: 0.2)
-        view.layer.cornerRadius = 40.0
+        view.backgroundColor = Theme.color.white.light().withAlphaComponent(0.2)
+        view.layer.cornerRadius = activeNormalProgressWidth
         view.clipsToBounds = true
         view.isHidden = true
         return view
@@ -87,7 +93,7 @@ class CameraButtonView: UIView {
     
     private lazy var shadowView: UIView = {
         let view = UIView()
-        view.layer.shadowColor = UIColor(white: 0, alpha: 0.6).cgColor
+        view.layer.shadowColor = Theme.color.black.light().withAlphaComponent(0.6).cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: 0)
         view.layer.shadowOpacity = 1.0
         view.layer.shadowRadius = 3
@@ -98,7 +104,7 @@ class CameraButtonView: UIView {
     
     private lazy var centerWhiteView: UIView = {
         let view = UIView()
-        view.backgroundColor = UIColor.white
+        view.backgroundColor = Theme.color.white.light()
         view.layer.cornerRadius = 34.0
         view.isHidden = true
         return view
@@ -106,7 +112,7 @@ class CameraButtonView: UIView {
     
     private lazy var pauseView: UIView = {
         let view = UIView()
-        view.backgroundColor = .white
+        view.backgroundColor = Theme.color.white.light()
         view.layer.cornerRadius = 4.0
         view.clipsToBounds = true
         view.isHidden = true
@@ -196,7 +202,7 @@ class CameraButtonView: UIView {
         addSubview(centerWhiteView)
         centerWhiteView.snp.makeConstraints { make in
             make.center.equalToSuperview()
-            make.width.height.equalTo(68)
+            make.width.height.equalTo(fillWhiteWidth)
         }
         
         addSubview(timeView)
@@ -297,7 +303,7 @@ class CameraButtonView: UIView {
     }
 
     private func videoToPhotoPath() -> UIBezierPath {
-        let path = UIBezierPath(roundedRect: CGRect(x: (80 - 68) / 2.0, y: (80 - 68) / 2.0, width: 68, height: 68), cornerRadius: 34)
+        let path = UIBezierPath(roundedRect: CGRect(x: (shutterWidth - fillWhiteWidth) / 2.0, y: (shutterWidth - fillWhiteWidth) / 2.0, width: fillWhiteWidth, height: fillWhiteWidth), cornerRadius: fillWhiteWidth / 2.0)
         return path
     }
     
@@ -324,8 +330,8 @@ class CameraButtonView: UIView {
     }
 
     private func activeNormalProgressCirclePath() -> UIBezierPath {
-        let path = UIBezierPath(arcCenter: CGPoint(x: 80 / 2.0, y: 80 / 2.0),
-                                radius: 40.0, 
+        let path = UIBezierPath(arcCenter: CGPoint(x: shutterWidth / 2.0, y: shutterWidth / 2.0),
+                                radius: shutterWidth / 2.0,
                                 startAngle: -.pi / 2.0,
                                 endAngle: 3 * .pi / 2,
                                 clockwise: true)
@@ -333,8 +339,8 @@ class CameraButtonView: UIView {
     }
     
     private func whiteProgressCirclePath() -> UIBezierPath {
-        let path = UIBezierPath(arcCenter: CGPoint(x: 80 / 2.0, y: 80 / 2.0),
-                                radius: (68 - 4) / 2.0,
+        let path = UIBezierPath(arcCenter: CGPoint(x: shutterWidth / 2.0, y: shutterWidth / 2.0),
+                                radius: (fillWhiteWidth - progressLineWidth) / 2.0,
                                 startAngle: -.pi / 2,
                                 endAngle: 3 * .pi / 2,
                                 clockwise: true)

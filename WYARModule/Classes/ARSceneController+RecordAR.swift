@@ -29,10 +29,13 @@ public extension ARSceneController {
             make.size.equalTo(CGSize(width: 32, height: 13))
         }
         
+        let window = UIApplication.shared.keyWindow
+        let bottomPadding = window?.safeAreaInsets.bottom ?? 0
+        
         view.addSubview(cameraTabView)
         cameraTabView.snp.makeConstraints { make in
             make.centerX.equalTo(view)
-            make.bottom.equalTo(view).offset(-70)
+            make.bottom.equalTo(view).offset(-34 - bottomPadding)
             make.size.equalTo(CGSize(width: 80, height: 80))
         }
     }
