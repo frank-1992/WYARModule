@@ -11,11 +11,12 @@ import SnapKit
 import XYUITheme
 import XYRouter
 import XYAnalytics
+import XYAlertCenter
 
 enum ARResultMediaType {
     case none
     case image(UIImage?)
-    case video(AVPlayerItem?)
+    case video(URL?)
 }
 
 final class ARResultController: UIViewController {
@@ -54,6 +55,7 @@ final class ARResultController: UIViewController {
     private lazy var saveButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "save", in: ARUtil.bundle, compatibleWith: nil), for: .normal)
+        button.addTarget(self, action: #selector(saveButtonClicked), for: .touchUpInside)
         return button
     }()
 
@@ -79,10 +81,12 @@ final class ARResultController: UIViewController {
         case .image(let image):
             imageView.image = image
             initImageView()
-        case .video(let playerItem):
+        case .video(let videoURL):
             NotificationCenter.default.addObserver(forName: UIApplication.willEnterForegroundNotification, object: nil, queue: .main) { [weak self] _ in
                 self?.playBackIfNeeded()
             }
+            guard let url = videoURL else { return }
+            let playerItem = AVPlayerItem(url: url)
             initPlayer(with: playerItem)
         case .none:
             break
@@ -157,9 +161,16 @@ final class ARResultController: UIViewController {
             make.bottom.equalTo(-34 - bottomPadding)
         }
     }
+    
+    @objc
+    private func saveButtonClicked() {
+        saveMediaToAlbum()
+    }
 
     @objc
-    func publishButtonClicked() {
+    private func publishButtonClicked() {
+        saveMediaToAlbum()
+        
         if let model = model {
             JLRoutes.routeURL(URL(string: model.capaLink))
 
@@ -170,6 +181,58 @@ final class ARResultController: UIViewController {
                 .send()
         }
     }
+    
+    private func saveMediaToAlbum() {
+        switch mediaType {
+        case .image(let image):
+            DispatchQueue.global().async {
+                guard let image = image else {
+                    return
+                }
+                UIImageWriteToSavedPhotosAlbum(image, self, #selector(self.didFinishSavingImage(_:error:contextInfo:)), nil)
+            }
+        case .video(let videoURL):
+            DispatchQueue.global().async {
+                guard let url = videoURL else {
+                    return
+                }
+                let filePath = url.path
+                let videoCompatible = UIVideoAtPathIsCompatibleWithSavedPhotosAlbum(filePath)
+                if videoCompatible {
+                    UISaveVideoAtPathToSavedPhotosAlbum(filePath, self, #selector(self.didFinishSavingVideo(videoPath:error:contextInfo:)), nil)
+                } else {
+                    self.showAlert(with: "该视频无法保存至相册")
+                }
+            }
+        case .none:
+            break
+        }
+    }
+    
+    @objc
+    private func didFinishSavingVideo(videoPath: String, error: NSError?, contextInfo: UnsafeMutableRawPointer?) {
+        if error != nil {
+            showAlert(with: "保存失败")
+        } else {
+            showAlert(with: "保存成功")
+        }
+    }
+    
+    @objc
+    func didFinishSavingImage(_ image: UIImage, error: NSError?, contextInfo: UnsafeMutableRawPointer?) {
+        if let err = error {
+            print(err)
+            return
+        }
+        showAlert(with: "保存成功")
+    }
+    
+    private func showAlert(with message: String) {
+        let alert = XYAlert.createTextItemWithText(onMiddle: message)
+        alert?.show()
+    }
+    
+    
 
     func initImageView() {
         view.addSubview(imageView)

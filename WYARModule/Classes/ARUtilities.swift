@@ -74,7 +74,7 @@ extension SCNVector3 {
     }
 }
 
-class ARUtil {
+enum ARUtil {
     static var bundle: Bundle {
         guard let path = Bundle.main.path(forResource: "WYARModule", ofType: "bundle") else {
             fatalError("资源错误")

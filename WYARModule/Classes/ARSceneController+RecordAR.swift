@@ -135,14 +135,25 @@ extension ARSceneController: CameraButtonViewDelegate {
         videoButton.isHidden = false
         pictureButton.isHidden = false
         sceneView.finishVideoRecording { [weak self] videoRecording in
-            let playerItem = AVPlayerItem(url: videoRecording.url)
-            let controller = ARResultController(mediaType: .video(playerItem))
-            controller.modalPresentationStyle = .overFullScreen
-            self?.present(controller, animated: true)
+            self?.previewResult(with: .video(videoRecording.url))
         }
     }
     
     func takePhoto() {
-        
+        sceneView.takePhotoResult { [weak self] (result: Result<UIImage, Swift.Error>) in
+            switch result {
+            case .success(let image):
+                self?.previewResult(with: .image(image))
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
+    
+    private func previewResult(with resource: ARResultMediaType) {
+        let controller = ARResultController(mediaType: resource)
+        controller.model = self.model
+        controller.modalPresentationStyle = .overFullScreen
+        self.present(controller, animated: true)
     }
 }

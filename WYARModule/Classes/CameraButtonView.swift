@@ -325,7 +325,8 @@ class CameraButtonView: UIView {
 
     private func activeNormalProgressCirclePath() -> UIBezierPath {
         let path = UIBezierPath(arcCenter: CGPoint(x: 80 / 2.0, y: 80 / 2.0),
-                                radius: 40.0, startAngle: -.pi / 2.0,
+                                radius: 40.0, 
+                                startAngle: -.pi / 2.0,
                                 endAngle: 3 * .pi / 2,
                                 clockwise: true)
         return path

@@ -195,7 +195,6 @@ public final class ARSceneController: UIViewController {
     private func loadVirtualObject(with url: URL) {
         let virtualObject = VirtualObject(url: url)
         loadedVirtualObject = virtualObject
-        print("模型加载成功")
         addGestures()
         
         displayVirtualObject()
@@ -220,7 +219,13 @@ public final class ARSceneController: UIViewController {
         guard let virtualObject = loadedVirtualObject else {
             return
         }
+        // setup standard height and scale
+        let boundingBox = virtualObject.boundingBox
+        let height = boundingBox.max.y - boundingBox.min.y
+        let standardHeight: Float = 1.0
+        let scale = standardHeight / height
         sceneView.scene.rootNode.addChildNode(virtualObject)
+        virtualObject.simdScale = simd_float3(x: scale, y: scale, z: scale)
         virtualObject.simdWorldPosition = simd_float3(x: 0, y: -1, z: -2)
         placedObject = virtualObject
     }
@@ -243,7 +248,7 @@ public final class ARSceneController: UIViewController {
             if planeAnchor.alignment == .vertical {
                 let orientation = object.orientation
                 var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
-                let multiplier = GLKQuaternionMakeWithAngleAndAxis(-.pi/2, 1, 0, 0)
+                let multiplier = GLKQuaternionMakeWithAngleAndAxis(-.pi / 2, 1, 0, 0)
                 glQuaternion = GLKQuaternionMultiply(glQuaternion, multiplier)
 
                 object.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
@@ -315,9 +320,7 @@ public final class ARSceneController: UIViewController {
                     return
                 }
                 
-                if placedObject.currentPlaneAlignment == .horizontal {
-                    placedObject.rotation = SCNVector4(x: 0, y: 1, z: 0, w: placedObject.rotation.w + Float(translation.x / FixValue.objectRotationFix))
-                } else {
+                if placedObject.currentPlaneAlignment == .vertical {
                     // vertical rotate
                     let orientation = placedObject.orientation
                     var glQuaternion = GLKQuaternionMake(orientation.x, orientation.y, orientation.z, orientation.w)
@@ -325,6 +328,8 @@ public final class ARSceneController: UIViewController {
                     glQuaternion = GLKQuaternionMultiply(glQuaternion, multiplier)
 
                     placedObject.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
+                } else {
+                    placedObject.rotation = SCNVector4(x: 0, y: 1, z: 0, w: placedObject.rotation.w + Float(translation.x / FixValue.objectRotationFix))
                 }
                 
                 placedObject.shouldUpdateAnchor = true
