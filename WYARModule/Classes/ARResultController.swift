@@ -221,7 +221,7 @@ final class ARResultController: UIViewController {
     @objc
     func didFinishSavingImage(_ image: UIImage, error: NSError?, contextInfo: UnsafeMutableRawPointer?) {
         if let err = error {
-            print(err)
+            showAlert(with: "保存失败")
             return
         }
         showAlert(with: "保存成功")

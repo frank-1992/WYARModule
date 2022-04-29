@@ -123,7 +123,6 @@ extension ARSceneController: CameraButtonViewDelegate {
         do {
             let videoRecording = try sceneView.startVideoRecording()
             videoRecording.$duration.observe(on: .main) { [weak self] duration in
-                print(duration)
                 if duration < Capture.limitedTime {
                     self?.cameraTabView.timeLabel.text = String(format: "%.1f", duration)
                 } else {

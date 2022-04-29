@@ -90,9 +90,9 @@ public final class ARSceneController: UIViewController {
     lazy var videoButton: UIButton = {
         let button = UIButton()
         button.setTitle(CameraMode.video.title, for: .normal)
-        button.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
-        button.setTitleColor(UIColor.white, for: .selected)
-        button.titleLabel?.font = UIFont(name: "PingFang SC", size: 16)
+        button.setTitleColor(Theme.color.white.light().withAlphaComponent(0.5), for: .normal)
+        button.setTitleColor(Theme.color.white.light(), for: .selected)
+        button.titleLabel?.font = UIFont(name: "PingFangSC-RegularC", size: 16)
         button.isSelected = true
         button.addTarget(self, action: #selector(switchVideoMode), for: .touchUpInside)
         return button
@@ -101,9 +101,9 @@ public final class ARSceneController: UIViewController {
     lazy var pictureButton: UIButton = {
         let button = UIButton()
         button.setTitle(CameraMode.picture.title, for: .normal)
-        button.setTitleColor(UIColor.white.withAlphaComponent(0.5), for: .normal)
-        button.setTitleColor(UIColor.white, for: .selected)
-        button.titleLabel?.font = UIFont(name: "PingFang SC", size: 16)
+        button.setTitleColor(Theme.color.white.light().withAlphaComponent(0.5), for: .normal)
+        button.setTitleColor(Theme.color.white.light(), for: .selected)
+        button.titleLabel?.font = UIFont(name: "PingFangSC-Regular", size: 16)
         button.isSelected = false
         button.addTarget(self, action: #selector(switchPictureMode), for: .touchUpInside)
         return button
@@ -150,7 +150,6 @@ public final class ARSceneController: UIViewController {
         previewDataSource.downloadUsdzFile(with: parameter) { [weak self] result in
             switch result {
             case .success(let (url, model)):
-                print(url)
                 self?.model = model
                 self?.loadVirtualObject(with: url)
             case .failure(let error):
