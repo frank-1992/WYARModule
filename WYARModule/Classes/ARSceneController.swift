@@ -92,7 +92,7 @@ public final class ARSceneController: UIViewController {
         button.setTitle(CameraMode.video.title, for: .normal)
         button.setTitleColor(Theme.color.white.light().withAlphaComponent(0.5), for: .normal)
         button.setTitleColor(Theme.color.white.light(), for: .selected)
-        button.titleLabel?.font = UIFont(name: "PingFangSC-RegularC", size: 16)
+        button.titleLabel?.font = UIFont(name: "PingFang-SC-Medium", size: 16)
         button.isSelected = true
         button.addTarget(self, action: #selector(switchVideoMode), for: .touchUpInside)
         return button
@@ -103,7 +103,7 @@ public final class ARSceneController: UIViewController {
         button.setTitle(CameraMode.picture.title, for: .normal)
         button.setTitleColor(Theme.color.white.light().withAlphaComponent(0.5), for: .normal)
         button.setTitleColor(Theme.color.white.light(), for: .selected)
-        button.titleLabel?.font = UIFont(name: "PingFangSC-Regular", size: 16)
+        button.titleLabel?.font = UIFont(name: "PingFang-SC-Medium", size: 16)
         button.isSelected = false
         button.addTarget(self, action: #selector(switchPictureMode), for: .touchUpInside)
         return button
