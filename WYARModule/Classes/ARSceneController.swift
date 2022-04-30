@@ -260,9 +260,9 @@ public final class ARSceneController: UIViewController {
         setupShadows(with: planeAnchor.alignment)
         if let object = placedObject {
             /// reset rotation
-            object.rotation.w = 0
+            object.simdRotation.w = 0
             /// set position
-            object.simdPosition = hitTestResult.worldTransform.translation
+            object.simdWorldPosition = hitTestResult.worldTransform.translation
             /// set orientation
             object.simdOrientation = hitTestResult.worldTransform.orientation
             /// rotate the orientation for vertical plane, make the model looks normal
@@ -350,7 +350,7 @@ public final class ARSceneController: UIViewController {
 
                     placedObject.orientation = SCNQuaternion(x: glQuaternion.x, y: glQuaternion.y, z: glQuaternion.z, w: glQuaternion.w)
                 } else {
-                    placedObject.rotation = SCNVector4(x: 0, y: 1, z: 0, w: placedObject.rotation.w + Float(translation.x / FixValue.objectRotationFix))
+                    placedObject.simdRotation = simd_float4(x: 0, y: 1, z: 0, w: placedObject.simdRotation.w + Float(translation.x / FixValue.objectRotationFix))
                 }
                 
                 placedObject.shouldUpdateAnchor = true
