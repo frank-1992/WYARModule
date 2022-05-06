@@ -18,6 +18,7 @@ class PlanDetectionView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.isUserInteractionEnabled = false
         setupUI()
     }
     
