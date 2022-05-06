@@ -137,6 +137,12 @@ public final class ARSceneController: UIViewController {
         return view
     }()
     
+    private lazy var rotateTipView: RotateTipView = {
+        let view = RotateTipView(frame: view.bounds)
+        view.playAnimation()
+        return view
+    }()
+    
     @objc
     func backButtonClicked() {
         dismiss(animated: false, completion: nil)
@@ -375,6 +381,9 @@ public final class ARSceneController: UIViewController {
                     placedObject.simdRotation = simd_float4(x: 0, y: 1, z: 0, w: placedObject.simdRotation.w + Float(translation.x / FixValue.objectRotationFix))
                 }
                 
+                // hide rotate tip
+                rotateTipView.isHidden = true
+                
                 placedObject.shouldUpdateAnchor = true
                 if placedObject.shouldUpdateAnchor {
                     placedObject.shouldUpdateAnchor = false
@@ -460,6 +469,12 @@ extension ARSceneController: ARSCNViewDelegate {
             
             // the object's location (whether horizontal plane or vertical plane)
             self.setupShadows(with: planeAnchor.alignment)
+            
+            // show the rotate tip
+            if !UserDefaults.hasShowTheRotateTip {
+                self.view.addSubview(self.rotateTipView)
+                UserDefaults.hasShowTheRotateTip = true
+            }
         }
     }
     
