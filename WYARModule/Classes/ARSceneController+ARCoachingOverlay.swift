@@ -11,14 +11,16 @@ import ARKit
 @available(iOS 13.0, *)
 extension ARSceneController: ARCoachingOverlayViewDelegate {
     
-    // HideUI
     public func coachingOverlayViewWillActivate(_ coachingOverlayView: ARCoachingOverlayView) {
-        // upperControlsView.isHidden = true
+        if !isDownloading {
+            planDetectionView.playAnimation()
+            planDetectionView.isHidden = false
+        }
     }
     
-    // PresentUI
     public func coachingOverlayViewDidDeactivate(_ coachingOverlayView: ARCoachingOverlayView) {
-        // upperControlsView.isHidden = false
+        planDetectionView.pauseAnimation()
+        planDetectionView.isHidden = true
     }
 
     // StartOver
@@ -32,14 +34,7 @@ extension ARSceneController: ARCoachingOverlayViewDelegate {
         
         coachingOverlay.translatesAutoresizingMaskIntoConstraints = false
         sceneView.addSubview(coachingOverlay)
-        
-        NSLayoutConstraint.activate([
-            coachingOverlay.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            coachingOverlay.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            coachingOverlay.widthAnchor.constraint(equalTo: view.widthAnchor),
-            coachingOverlay.heightAnchor.constraint(equalTo: view.heightAnchor)
-        ]
-        )
+        coachingOverlay.alpha = 0
         
         coachingOverlay.activatesAutomatically = true
         coachingOverlay.goal = .horizontalPlane

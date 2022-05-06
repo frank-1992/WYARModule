@@ -75,6 +75,7 @@ public final class ARSceneController: UIViewController {
     /// about virtual object
     private var loadedVirtualObject: VirtualObject?
     private var placedObject: VirtualObject?
+    public var isDownloading: Bool = false
     
     /// the flag about place object
     private var canPlaceObject: Bool = false
@@ -123,6 +124,19 @@ public final class ARSceneController: UIViewController {
         return backButton
     }()
     
+    private lazy var loadingView: ARLoadingView = {
+        let view = ARLoadingView(frame: view.bounds)
+        view.playAnimation()
+        return view
+    }()
+    
+    public lazy var planDetectionView: PlanDetectionView = {
+        let view = PlanDetectionView(frame: view.bounds)
+        view.playAnimation()
+        view.isHidden = true
+        return view
+    }()
+    
     @objc
     func backButtonClicked() {
         dismiss(animated: false, completion: nil)
@@ -131,6 +145,10 @@ public final class ARSceneController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         setupSceneView()
+        setupCoachingOverlay()
+        view.addSubview(loadingView)
+        view.addSubview(planDetectionView)
+        
         DispatchQueue.global().async {
             self.downloadUsdzFile()
         }
@@ -143,11 +161,14 @@ public final class ARSceneController: UIViewController {
     }
     
     private func downloadUsdzFile() {
+        isDownloading = true
         guard let parameter = parameter else {
             return
         }
 
         previewDataSource.downloadUsdzFile(with: parameter) { [weak self] result in
+            self?.isDownloading = false
+            self?.loadingView.pauseAnimation()
             switch result {
             case .success(let (url, model)):
                 self?.model = model
@@ -209,8 +230,9 @@ public final class ARSceneController: UIViewController {
         let virtualObject = VirtualObject(url: url)
         loadedVirtualObject = virtualObject
         addGestures()
-        
         displayVirtualObject()
+        // custom coachingoverlay
+        planDetectionView.isHidden = false
     }
     
     // MARK: - setup ARSceneView
@@ -422,6 +444,9 @@ extension ARSceneController: ARSCNViewDelegate {
     public func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         // add plane
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
+        DispatchQueue.main.async {
+            self.planDetectionView.isHidden = true
+        }
         if planeAnchor.alignment == .horizontal {
             canPlaceObject = true
         }
