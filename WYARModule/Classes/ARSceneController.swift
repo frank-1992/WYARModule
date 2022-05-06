@@ -130,7 +130,7 @@ public final class ARSceneController: UIViewController {
         return view
     }()
     
-    public lazy var planDetectionView: PlanDetectionView = {
+    lazy var planDetectionView: PlanDetectionView = {
         let view = PlanDetectionView(frame: view.bounds)
         view.playAnimation()
         view.isHidden = true
