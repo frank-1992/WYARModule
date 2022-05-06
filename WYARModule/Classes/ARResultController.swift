@@ -63,13 +63,15 @@ final class ARResultController: UIViewController {
         let publishButton = UIButton()
         publishButton.backgroundColor = Theme.color.red
         publishButton.layer.cornerRadius = 24
-        publishButton.setTitle("发布笔记", for: .normal)
+        publishButton.setTitle("一键发布笔记", for: .normal)
         publishButton.layer.zPosition = 1000
         publishButton.translatesAutoresizingMaskIntoConstraints = false
         publishButton.addTarget(self, action: #selector(publishButtonClicked), for: .touchUpInside)
         publishButton.titleLabel?.font = Theme.fontXLarge
         return publishButton
     }()
+    
+    private var hasSaved: Bool = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -165,11 +167,14 @@ final class ARResultController: UIViewController {
     @objc
     private func saveButtonClicked() {
         saveMediaToAlbum()
+        hasSaved = true
     }
 
     @objc
     private func publishButtonClicked() {
-        saveMediaToAlbum()
+        if !hasSaved {
+            saveMediaToAlbum()
+        }
         
         if let model = model {
             JLRoutes.routeURL(URL(string: model.capaLink))

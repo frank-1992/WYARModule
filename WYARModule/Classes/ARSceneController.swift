@@ -453,27 +453,25 @@ extension ARSceneController: ARSCNViewDelegate {
     public func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
         // add plane
         guard let planeAnchor = anchor as? ARPlaneAnchor else { return }
-        DispatchQueue.main.async {
-            self.planDetectionView.isHidden = true
-        }
         if planeAnchor.alignment == .horizontal {
             canPlaceObject = true
-        }
-        
-        DispatchQueue.main.async {
-            guard let placeObject = self.placedObject, self.placedObjectOnPlane == false else { return }
-            let touchLocation = self.sceneView.screenCenter
-            guard let hitTestResult = self.sceneView.smartHitTest(touchLocation) else { return }
-            placeObject.simdWorldPosition = hitTestResult.worldTransform.translation
-            self.placedObjectOnPlane = true
-            
-            // the object's location (whether horizontal plane or vertical plane)
-            self.setupShadows(with: planeAnchor.alignment)
-            
-            // show the rotate tip
-            if !UserDefaults.hasShowTheRotateTip {
-                self.view.addSubview(self.rotateTipView)
-                UserDefaults.hasShowTheRotateTip = true
+            DispatchQueue.main.async {
+                self.planDetectionView.isHidden = true
+                
+                guard let placeObject = self.placedObject, self.placedObjectOnPlane == false else { return }
+                let touchLocation = self.sceneView.screenCenter
+                guard let hitTestResult = self.sceneView.smartHitTest(touchLocation) else { return }
+                placeObject.simdWorldPosition = hitTestResult.worldTransform.translation
+                self.placedObjectOnPlane = true
+                
+                // the object's location (whether horizontal plane or vertical plane)
+                self.setupShadows(with: planeAnchor.alignment)
+                
+                // show the rotate tip
+                if !UserDefaults.hasShowTheRotateTip {
+                    self.view.addSubview(self.rotateTipView)
+                    UserDefaults.hasShowTheRotateTip = true
+                }
             }
         }
     }
